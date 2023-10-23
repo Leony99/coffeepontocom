@@ -1,20 +1,14 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { Splash } from './screens/Splash';
+import { Home } from './screens/Home';
+import { hideAsync } from 'expo-splash-screen';
+import { useState } from 'react';
+
+hideAsync();
 
 export default function App() {
+  const [splashComplete, setSplashComplete] = useState(false);
+
   return (
-    <View style={styles.container}>
-      <Text>Hello</Text>
-      <StatusBar style="auto" />
-    </View>
+    splashComplete ? <Home></Home> : <Splash onComplete = {setSplashComplete}></Splash>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
