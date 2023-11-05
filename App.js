@@ -1,14 +1,41 @@
-import { Splash } from './screens/Splash';
-import { Home } from './screens/Home';
-import { hideAsync } from 'expo-splash-screen';
-import { useState } from 'react';
+import React, { useState } from 'react';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
 
-hideAsync();
+import { Splash } from './src/screens/Splash';
+import { BottomNav } from './src/Components/BottomNav';
+import { Product } from './src/screens/Product';
+
+const Stack = createStackNavigator();
 
 export default function App() {
-  const [splashComplete, setSplashComplete] = useState(false);
+
+  const [showHome, setShowHome] = useState(false);
+
+  function handleSplashComplete() {
+    setShowHome(true);
+  }
+
+  return showHome
+  ?
+  <SafeAreaProvider>
+    <NavigationContainer>
+      <Stack.Navigator>
+        <Stack.Screen name="BottomNav" component={BottomNav} options={{ headerShown: false }}/>
+        <Stack.Screen name="Product" component={Product} options={{ headerShown: false }}/>
+      </Stack.Navigator>
+    </NavigationContainer>
+  </SafeAreaProvider>
+  : <Splash onComplete={handleSplashComplete} />;
 
   return (
-    splashComplete ? <Home></Home> : <Splash onComplete = {setSplashComplete}></Splash>
-  );
+    <SafeAreaProvider>
+      <NavigationContainer>
+        <Stack.Navigator>
+          <Stack.Screen name="BottomNav" component={BottomNav} options={{ headerShown: false }}/>
+          <Stack.Screen name="Product" component={Product} options={{ headerShown: false }}/>
+        </Stack.Navigator>
+      </NavigationContainer>
+    </SafeAreaProvider>)
 }
