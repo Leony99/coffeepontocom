@@ -1,72 +1,19 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, Image, StyleSheet, TextInput } from 'react-native';
 import { Title, Paragraph, Button, Appbar, TouchableRipple } from 'react-native-paper';
+import { cartListExclude, getCartList } from '../storage/CartList';
 
 //Fazer card clicável => Abir janela para editar quantidade ou excluir produto.
-
-const cartItems = [
-  {
-    name: 'Produto 1',
-    description: 'Descrição do Produto 1',
-    price: 5.99,
-    quantity: 2,
-    image: require('../../assets/cafe.jpg'),
-  },
-  {
-    name: 'Produto 2',
-    description: 'Descrição do Produto 2',
-    price: 9.99,
-    quantity: 1,
-    image: require('../../assets/cafe.jpg'),
-  },
-  {
-    name: 'Produto 2',
-    description: 'Descrição do Produto 2',
-    price: 9.99,
-    quantity: 1,
-    image: require('../../assets/cafe.jpg'),
-  },
-  {
-    name: 'Produto 2',
-    description: 'Descrição do Produto 2',
-    price: 9.99,
-    quantity: 1,
-    image: require('../../assets/cafe.jpg'),
-  },
-  {
-    name: 'Produto 2',
-    description: 'Descrição do Produto 2',
-    price: 9.99,
-    quantity: 1,
-    image: require('../../assets/cafe.jpg'),
-  },
-  {
-    name: 'Produto 2',
-    description: 'Descrição do Produto 2',
-    price: 9.99,
-    quantity: 1,
-    image: require('../../assets/cafe.jpg'),
-  },
-  {
-    name: 'Produto 2',
-    description: 'Descrição do Produto 2 Descrição do Produto 2 Descrição do Produto 2 Descrição do Produto 2',
-    price: 9.99,
-    quantity: 1,
-    image: require('../../assets/cafe.jpg'),
-  },
-  // Adicione mais itens ao carrinho conforme necessário
-];
 
 export function Cart() {
   const [observation, setObservation] = useState('');
 
-  // Função para calcular o valor total dos itens no carrinho
   const calculateTotal = () => {
-    if(cartItems.length == 0) {
+    if(getCartList().length == 0) {
       return (0).toFixed(2);
     }
     else {
-      return cartItems.reduce((total, item) => total + item.price, 0).toFixed(2);
+      return getCartList().reduce((total, item) => total + item.price * item.quantity, 0).toFixed(2);
     }
   };
 
@@ -97,13 +44,13 @@ export function Cart() {
         Finalizar Pedido
       </Button>
 
-      {cartItems.length > 0 ? (
+      {getCartList().length > 0 ? (
         <ScrollView style={styles.scrollView}
         contentContainerStyle={{rowGap: 3}}
         showsVerticalScrollIndicator={false}
         overScrollMode='never'
         >
-          {cartItems.map((item, index) => (
+          {getCartList().map((item, index) => (
             <TouchableRipple key={index} style={styles.card} onPress={() => console.log(item.name)}>
               <View style={styles.cardContent}>
                 <Image

@@ -4,7 +4,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 
 import { Splash } from './src/screens/Splash';
-import { BottomNav } from './src/Components/BottomNav';
+import { BottomNav } from './src/components/BottomNav';
 import { Product } from './src/screens/Product';
 
 const Stack = createStackNavigator();

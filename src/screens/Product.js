@@ -2,20 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Image } from 'react-native';
 import { Title, Paragraph, Button, IconButton, Appbar } from 'react-native-paper';
 import { useNavigation, useRoute } from '@react-navigation/native';
-
-//Pegar dados do produto
-//Criar funcionalidade de adicionar ao carrinho
+import { cartListAdd } from '../storage/CartList';
 
 export function Product() {
   const navigation = useNavigation();
   const route = useRoute();
   const { item } = route.params;
-  
-  const [price, setPrice] = useState(parseFloat(item.price));
+
+  const [price, setPrice] = useState(item.price);
   const [quantity, setQuantity] = useState(1);
 
   useEffect(() => {
-    setPrice(parseFloat(item.price) * quantity);
+    setPrice(item.price * quantity);
   }, [quantity]);
 
   const increaseQuantity = () => {
@@ -70,7 +68,10 @@ export function Product() {
         labelStyle={{fontSize: 18}}
         textColor='white'
         onPress={() => {
-          // Ação ao adicionar ao carrinho
+          const itemToPass = item;
+          item.quantity = quantity;
+          cartListAdd(itemToPass);
+          navigation.navigate('BottomNav')
         }}
       >
         Adicionar ao carrinho
