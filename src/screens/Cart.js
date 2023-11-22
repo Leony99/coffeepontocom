@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, Image, StyleSheet, TextInput } from 'react-native';
-import { Title, Paragraph, Button, Appbar, TouchableRipple } from 'react-native-paper';
-import { cartListExclude, getCartList } from '../storage/CartList';
-
-//Fazer card clicável => Abir janela para editar quantidade ou excluir produto.
+import { View, Text, ScrollView, Image, StyleSheet, TextInput, Alert } from 'react-native';
+import { Title, Paragraph, Button, Appbar, TouchableRipple, Modal, Portal, IconButton } from 'react-native-paper';
+import { getCartList, cartListExclude, cartListEditQuantity } from '../storage/CartList';
+import { useNavigation } from '@react-navigation/native';
 
 export function Cart() {
+  const navigation = useNavigation();
   const [observation, setObservation] = useState('');
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedItemIndex, setSelectedItemIndex] = useState(null);
+  const [quantity, setQuantity] = useState(null);
 
   const calculateTotal = () => {
     if(getCartList().length == 0) {
@@ -14,6 +17,60 @@ export function Cart() {
     }
     else {
       return getCartList().reduce((total, item) => total + item.price * item.quantity, 0).toFixed(2);
+    }
+  };
+
+  const openModal = (index) => {
+    setModalVisible(true);
+    setSelectedItemIndex(index);
+    setQuantity(getCartList()[index].quantity);
+  };
+
+  const closeModal = () => {
+    setModalVisible(false);
+    setSelectedItemIndex(null);
+    setQuantity(null);
+  };
+
+  const decreaseQuantity = () => {
+    if (selectedItemIndex !== null) {
+      if (quantity > 1) {
+        setQuantity(quantity - 1);
+      }
+    }
+  };
+
+  const increaseQuantity = () => {
+    if (selectedItemIndex !== null) {
+      setQuantity(quantity + 1);
+    }
+  };
+
+  const editItemQuantity = () => {
+    if (selectedItemIndex !== null) {
+      cartListEditQuantity(selectedItemIndex, quantity);
+      closeModal();
+    }
+  }
+
+  const removeItemFromCart = () => {
+    if (selectedItemIndex !== null) {
+      cartListExclude(selectedItemIndex);
+      closeModal();
+    }
+  };
+
+  const handleCheckout = () => {
+    if (getCartList().length === 0) {
+      Alert.alert('', 'O carrinho está vazio.');
+    } else {
+      const order = {
+        products: getCartList(),
+        totalPrice: calculateTotal(),
+        observation: observation,
+      };
+      //Correct = navigation.navigate('QRScan', { order });
+      navigation.navigate('ConfirmOrder', { order });
     }
   };
 
@@ -39,7 +96,7 @@ export function Cart() {
       <Button
         mode="contained"
         style={styles.checkoutButton}
-        onPress={() => {}}
+        onPress={() => {handleCheckout()}}
       >
         Finalizar Pedido
       </Button>
@@ -51,7 +108,7 @@ export function Cart() {
         overScrollMode='never'
         >
           {getCartList().map((item, index) => (
-            <TouchableRipple key={index} style={styles.card} onPress={() => console.log(item.name)}>
+            <TouchableRipple key={index} style={styles.card} onPress={() => openModal(index)}>
               <View style={styles.cardContent}>
                 <Image
                   source={item.image}
@@ -72,6 +129,33 @@ export function Cart() {
       ) : (
         <Text style={styles.emptyCartText}>O carrinho está vazio!</Text>
       )}
+
+      <Portal>
+        <Modal visible={modalVisible} onDismiss={closeModal} contentContainerStyle={styles.modalContainer}>
+          <Title style={styles.modalTitle}>{selectedItemIndex !== null ? getCartList()[selectedItemIndex].name : ''}</Title>
+          <View style={styles.modalLine}></View>
+          <View style={styles.modalQuantityContainer}>
+            <IconButton
+              mode='outlined'
+              icon='minus'
+              iconColor='white'
+              size={16}
+              onPress={decreaseQuantity}
+            />
+            <Title style={styles.modalQuantity}>{quantity}</Title>
+            <IconButton
+              mode='outlined'
+              icon='plus'
+              iconColor='white'
+              size={16}
+              onPress={increaseQuantity}
+            />
+          </View>
+          <Button mode="contained" style={styles.modalBtn} onPress={editItemQuantity}>Alterar quantidade</Button>
+          <View style={styles.modalLine}></View>
+          <Button mode="contained" style={{...styles.modalBtn, backgroundColor: '#FF0000'}} onPress={removeItemFromCart}>Remover do carrinho</Button>
+        </Modal>
+      </Portal>
 
     </View>
   );
@@ -115,7 +199,7 @@ const styles = StyleSheet.create({
     borderColor: palette.yellow,
     paddingHorizontal: 16,
     paddingVertical: 4,
-    backgroundColor: palette.white,
+    backgroundColor: palette.lightGrey,
     color: palette.white,
   },
   checkoutButton: {
@@ -185,5 +269,46 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     textAlignVertical: 'center',
     fontSize: 18,
+  },
+  modalContainer: {
+    margin: 50,
+    backgroundColor: palette.lightGrey,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    flexDirection: 'column',
+    alignItems: 'center',
+  },
+  modalTitle: {
+    marginVertical: 16,
+    fontSize: 24,
+    lineHeight: 24,
+    textAlign: 'center',
+    fontWeight: 'bold',
+  },
+  modalLine: {
+    height: 1,
+    backgroundColor: palette.white,
+    alignSelf: 'stretch',
+  },
+  modalQuantityContainer: {
+    marginTop: 16,
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalQuantity: {
+    marginVertical: 0,
+    marginHorizontal: 24,
+    fontSize: 24,
+    color: palette.white,
+  },
+  modalBtn: {
+    marginVertical: 16,
+    width: "100%",
+    height: 40,
+    borderRadius: 5,
+    color: palette.white,
+    backgroundColor: '#ffb738',
   },
 });

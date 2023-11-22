@@ -99,11 +99,12 @@ const styles = StyleSheet.create({
   appBar: {
     height: 'min-content',
     height: 44,
-    paddingVertical: 8,
+    paddingVertical: 0,
     backgroundColor: palette.darkGrey,
   },
   productCard: {
     margin: 16,
+    marginTop: 8,
     marginBottom: 0,
     backgroundColor: palette.lightGrey,
     borderRadius: 20,

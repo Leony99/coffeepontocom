@@ -1,15 +1,35 @@
-import * as React from 'react';
-import { View, Text, ScrollView, StyleSheet, TextInput } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, ScrollView, StyleSheet, TextInput, Alert } from 'react-native';
 import { Button, List, IconButton, Appbar, TouchableRipple } from 'react-native-paper';
-
-//Conectar cpf ao perfil no database
-//Fazer páginas dos botões
+import { getClients } from '../storage/Clients';
 
 export function Profile() {
-  const [usable, setUsable] = React.useState(false);
+  const [usable, setUsable] = useState(false);
+  const [cpf, setCpf] = useState('');
+  const [clientData, setClientData] = useState(null);
 
-  const toggleUsable = () => {
-    setUsable(!usable);
+  useEffect(() => {
+    if (!usable) {
+      setClientData(null);
+    }
+  }, [usable]);
+
+  const connect = async () => {
+    try {
+      const clients = await getClients();
+      const client = clients.find((c) => c.cpf === cpf);
+
+      if (client) {
+        setUsable(true);
+        setClientData(client);
+      } else {
+        Alert.alert('', 'Cliente não encontrado.');
+        setUsable(false);
+        setClientData(null);
+      }
+    } catch (error) {
+      console.error('Erro ao obter dados do cliente:', error);
+    }
   };
 
   return (
@@ -19,21 +39,25 @@ export function Profile() {
       </Appbar.Header>
 
       <View style={styles.pointsBox}>
-        <Text style={styles.pointsText}>Pontuação: 0</Text>
+        <Text style={styles.pointsText}>Pontuação: {clientData?.points.toFixed(1) || 0}</Text>
       </View>
 
       <TextInput
         style={styles.cpfInput}
         selectionColor={palette.yellow}
+        keyboardType='numeric'
         placeholder='Insira seu CPF'
+        value={cpf}
+        onChangeText={(text) => setCpf(text.replace(/[^0-9]/g, ''))}
+        editable={!usable}
       />
 
       <Button
         style={styles.cpfConnect}
         mode="contained"
-        onPress={toggleUsable}
+        onPress={connect}
       >
-        Conferir meu perfil
+        Conferir minha pontuação
       </Button>
 
       <ScrollView
@@ -43,41 +67,38 @@ export function Profile() {
         overScrollMode='never'
       >
         {[
-          { title: 'Resgatar prêmios', icon: 'gift-outline', usable:false },
-          { title: 'Meus pedidos', icon: 'clipboard-outline', usable:usable},
-          { title: 'Formas de pagamento', icon: 'credit-card-outline', usable:usable },
-          { title: 'Desconectar', icon: 'logout', usable:usable },
-        ].map((item, index) => (item.usable ? (
-            <TouchableRipple
-              key={index}
-              style={styles.buttonContainer}
-              onPress={() => console.log(item.title)}
-            >
-              <List.Item
-                style={styles.buttonItem}
-                title={item.title}
-                left={() => <List.Icon icon={item.icon} />}
-                right={() => <IconButton icon={'chevron-right'}/>}
-              />
-            </TouchableRipple>
-          ) : (
-            <View
-              key={index}
-              style={styles.buttonContainer}
-            >
-              <List.Item
-                style={styles.buttonItem}
-                title={item.title}
-                left={() => <List.Icon icon={item.icon} />}
-                right={() => <IconButton disabled={!item.usable} icon={'lock'}/>}
-              />
-            </View>
-          )
+          { title: 'Resgatar prêmios', icon: 'gift-outline', usable: false },
+          { title: 'Meus pedidos', icon: 'clipboard-outline', usable: false },
+          { title: 'Desconectar', icon: 'logout', usable: usable },
+        ].map((item, index) => (
+          <TouchableRipple
+            key={index}
+            style={styles.buttonContainer}
+            onPress={() => {
+              if (item.usable && item.title === 'Desconectar') {
+                setUsable(false);
+                setCpf('');
+                setClientData(null);
+              }
+            }}
+          >
+            <List.Item
+              style={styles.buttonItem}
+              title={item.title}
+              left={() => <List.Icon icon={item.icon} />}
+              right={() => <IconButton
+                icon={item.usable ? '' : 'lock'}
+              />}
+            />
+          </TouchableRipple>
         ))}
       </ScrollView>
     </View>
   );
 }
+
+// Restante do código...
+
 
 const palette = {
   darkGrey: '#323433', // Primary
@@ -117,7 +138,7 @@ const styles = StyleSheet.create({
     borderColor: palette.yellow,
     paddingHorizontal: 16,
     paddingVertical: 4,
-    backgroundColor: palette.white,
+    backgroundColor: palette.lightGrey,
     color: palette.white,
   },
   cpfConnect: {

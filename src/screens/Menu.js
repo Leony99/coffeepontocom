@@ -2,62 +2,18 @@ import React, { useState } from 'react';
 import { View, ScrollView, Image, StyleSheet } from 'react-native';
 import { Searchbar, Title, Paragraph, Chip, Appbar, TouchableRipple } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
+import { getCategories } from '../storage/Categories';
+import { getProducts } from '../storage/Products';
 
-//Pegar categorias na database
-//Pegar itens do menuItems na database
-
-const categories = [
-  'Tudo',
-  'Pratos Principais',
-  'Sobremesas',
-  'Bebidas',
-  'Cafés/Cappuccinos',
-];
-
-const menuItems = [
-  {
-    name: 'Produto 1',
-    description: 'Descrição do Produto 1',
-    category: 'Pratos Principais',
-    price: 5.99,
-    image: require('../../assets/cafe.jpg'),
-  },
-  {
-    name: 'Produto 2',
-    description: 'Descrição do Produto 2',
-    category: 'Pratos Principais',
-    price: 9.99,
-    image: require('../../assets/cafe.jpg'),
-  },
-  {
-    name: 'Produto 3',
-    description: 'Descrição do Produto 3',
-    category: 'Sobremesas',
-    price: 4.99,
-    image: require('../../assets/cafe.jpg'),
-  },
-  {
-    name: 'Produto 4',
-    description: 'Descrição do Produto 4',
-    category: 'Bebidas',
-    price: 2.99,
-    image: require('../../assets/cafe.jpg'),
-  },
-  {
-    name: 'Produto 5',
-    description: 'Descrição do Produto 5',
-    category: 'Cafés/Cappuccinos',
-    price: 3.99,
-    image: require('../../assets/cafe.jpg'),
-  },
-];
+const categories = getCategories();
+const Products = getProducts();
 
 export function Menu() {
   const navigation = useNavigation();
   const [searchText, setSearchText] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Tudo');
 
-  const filteredMenu = menuItems.filter((item) => {
+  const filteredMenu = Products.filter((item) => {
     const title = item.name.toLowerCase();
 
     return (
@@ -77,6 +33,8 @@ export function Menu() {
         onChangeText={(query) => setSearchText(query)}
         value={searchText}
         style={styles.searchBar}
+        iconColor={palette.white}
+        color={palette.white}
         inputStyle={{height:40, minHeight: 0}}
       />
 
